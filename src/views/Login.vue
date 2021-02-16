@@ -18,7 +18,7 @@
             <input v-model.trim="loginForm.password" type="password" placeholder="Password" id="password1"/>
             <button @click="login()" class="button">Log In</button>
             <div class="extras">
-              <a>Forgot Password</a>
+              <a @click="togglePasswordReset()" >Forgot Password</a>
               <a @click="toggleForm()" >Create an Account</a>
             </div>
           </div>
@@ -69,7 +69,8 @@ export default {
         email: '',
         password: ''
       },
-      showLoginForm: true
+      showLoginForm: true,
+      showPasswordReset: false
     }
   },
   methods: {
@@ -89,6 +90,9 @@ export default {
     },
     toggleForm() {
       this.showLoginForm = !this.showLoginForm
+    },
+    togglePasswordReset() {
+      this.showPasswordReset = !this.showPasswordReset
     }
   }
 }
@@ -197,6 +201,9 @@ input {
   a {
     color: #1877F2;
     margin: 0 10px;
+  }
+  a:hover {
+    cursor: pointer;
   }
 }
 </style>
