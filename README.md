@@ -1,4 +1,4 @@
-# twitter-clone
+# Visage social media clone
 
 ## Project setup
 ```
