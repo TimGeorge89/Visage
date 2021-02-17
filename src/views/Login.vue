@@ -1,5 +1,6 @@
 <template>
   <div id="login">
+    <PasswordReset v-if="showPasswordReset" @close="togglePasswordReset()"></PasswordReset>
     <section>
       <div class="col1">
         <h1>Visage</h1>
@@ -56,6 +57,8 @@
 </template>
 
 <script>
+import PasswordReset from '@/components/PasswordReset'
+
 export default {
   data() {
     return {
@@ -72,6 +75,9 @@ export default {
       showLoginForm: true,
       showPasswordReset: false
     }
+  },
+  components: {
+    PasswordReset
   },
   methods: {
     login() {
@@ -161,7 +167,7 @@ input {
     color: white;
     padding: 10px 0;
     width: 285px;
-    margin: 0 auto;
+    margin: 10px auto;
     background-color: #42B72A;
     border: none;
     border-radius: 5px;
