@@ -11,7 +11,7 @@ export default new Vuex.Store({
   },
   mutations: {
     setUserProfile(state, val) {
-      state.userProfile - val
+      state.userProfile = val
     }
   },
   actions: {
@@ -42,7 +42,26 @@ export default new Vuex.Store({
       commit ('setUserProfile', userProfile.data())
 
       // change route to dashboard
-      router.push('/')
+      if (router.currentRoute.path === '/login') {
+        router.push('/')
+      }
+    },
+    async logout({ commit }) {
+      await fb.auth.signOut()
+
+      // clear userProfile and redirect to /login
+      commit('setUserProfile', {})
+      router.push('/login')
+    },
+    async createPost({ state }, post) {
+      await fb.postsCollection.add({
+        createdOn: new Date(),
+        content: post.content,
+        userId: fb.auth.currentUser.uid,
+        userName: state.userProfile.name,
+        comments: 0,
+        likes: 0
+      })
     }
   },
   modules: {
