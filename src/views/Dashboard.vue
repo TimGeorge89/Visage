@@ -1,5 +1,8 @@
 <template>
   <div id="dashboard">
+    <transition name="fade">
+      <CommentModal v-if="showCommentModal" :post="selectedPost" @close="toggleCommentModal()"></CommentModal>
+    </transition>
     <section>
       <div class="col1">
         <div class="profile">
@@ -18,6 +21,18 @@
         <div>
           <p class="no-results" >There are currently no post</p>
         </div>
+        <div v-if="posts.length">
+          <div v-for="post in posts" :key="post.id" class="post">
+            <h5>{{ post.userName }}</h5>
+            <span>{{ post.createdOn | formatDate }}</span>
+            <p>{{ post.content | trimLength }}</p>
+            <ul>
+              <li><a @click="toggleCommentModal(post)">comments {{ post.comments }}</a></li>
+              <li><a @click="likePost(post.id, post.likes)">likes {{ post.likes }}</a></li>
+              <li><a>view full post</a></li>
+            </ul>
+          </div>
+        </div>
       </div>
     </section>
   </div>
@@ -25,22 +40,54 @@
 
 <script>
 import { mapState } from 'vuex'
+import moment from 'moment'
+import CommentModal from '@/components/CommentModal'
 
 export default {
+  components: {
+    CommentModal
+  },
   data() {
     return {
       post: {
         content: ''
-      }
+      },
+      showCommentModal: false,
+      selectedPost: {}
     }
   },
   computed: {
-    ...mapState(['userProfile'])
+    ...mapState(['userProfile', 'posts'])
   },
   methods: {
     createPost() {
       this.$store.dispatch('createPost', { content: this.post.content })
       this.post.content = ''
+    },
+    toggleCommentModal(post) {
+      this.showCommentModal = !this.showCommentModal
+
+      // if opening modal set selectedPost, else clear
+      if (this.showCommentModal) {
+        this.selectedPost = post
+      } else {
+        this.selectedPost = {}
+      }
+    },
+    likePost(id, likesCount) {
+      this.$store.dispatch('likePost', { id, likesCount })
+    }
+  },
+  filters: {
+    formatDate(val) {
+      if (!val) { return '-' }
+
+      let date = val.toDate()
+      return moment(date).fromNow()
+    },
+    trimLength(val) {
+      if (val.length < 200) { return val }
+      return `${val.substring(0, 200)}...`
     }
   }
 }
