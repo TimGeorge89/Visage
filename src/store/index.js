@@ -5,13 +5,30 @@ import router from '../router/index'
 
 Vue.use(Vuex)
 
-export default new Vuex.Store({
+fb.postsCollection.orderBy('createdOn', 'desc').onSnapshot(snapshot => {
+  let postsArray = []
+
+  snapshot.forEach(doc => {
+    let post = doc.data()
+    post.id = doc.id
+
+    postsArray.push(post)
+  })
+
+  store.commit('setPosts', postsArray)
+})
+
+const store = new Vuex.Store({
   state: {
-    userProfile: {}
+    userProfile: {},
+    posts: []
   },
   mutations: {
     setUserProfile(state, val) {
-      state.userProfile - val
+      state.userProfile = val
+    },
+    setPosts(state, val) {
+      state.posts = val
     }
   },
   actions: {
@@ -42,9 +59,51 @@ export default new Vuex.Store({
       commit ('setUserProfile', userProfile.data())
 
       // change route to dashboard
-      router.push('/')
+      if (router.currentRoute.path === '/login') {
+        router.push('/')
+      }
+    },
+    async logout({ commit }) {
+      await fb.auth.signOut()
+
+      // clear userProfile and redirect to /login
+      commit('setUserProfile', {})
+      router.push('/login')
+    },
+    async createPost({ state }, post) {
+      await fb.postsCollection.add({
+        createdOn: new Date(),
+        content: post.content,
+        userId: fb.auth.currentUser.uid,
+        userName: state.userProfile.name,
+        comments: 0,
+        likes: 0
+      })
+    },
+    async likePost ({ commit }, post) {
+      console.log(commit)
+      const userId = fb.auth.currentUser.uid
+      const docId = `${userId}_${post.id}`
+      
+
+      // check if user has liked post
+      const doc = await fb.likesCollection.doc(docId).get()
+      if (doc.exists) { return }
+
+      // create post
+      await fb.likesCollection.doc(docId).set({
+        postId: post.id,
+        userId: userId
+      })
+
+      // update post likes count
+      fb.postsCollection.doc(post.id).update({
+        likes: post.likesCount + 1
+      })
     }
   },
   modules: {
   }
 })
+
+export default store
